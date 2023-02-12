@@ -1,0 +1,16 @@
+[package]
+name = "pxid"
+version = "0.0.0"
+edition = "2021"
+description = "Prefixed Globally Unique Identifier"
+repository = "https://github.com/EstebanBorai/pxid"
+categories = ["web-programming"]
+homepage = "https://github.com/EstebanBorai/pxid"
+keywords = ["network", "id", "generator", "uid"]
+license = "MIT"
+authors = ["Esteban Borai <estebanborai@gmail.com>"]
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
