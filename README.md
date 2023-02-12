@@ -1,6 +1,19 @@
-# pxid
+<div>
+  <h1 align="center">pxid</h1>
+  <h4 align="center">
+   Prefixed Globally Unique Identifier
+  </h4>
+</div>
 
-Prefixed Globally Unique Identifier
+<div align="center">
+
+  [![Crates.io](https://img.shields.io/crates/v/pxid.svg)](https://crates.io/crates/pxid)
+  [![Documentation](https://docs.rs/pxid/badge.svg)](https://docs.rs/pxid)
+  ![Build](https://github.com/EstebanBorai/pxid/workflows/build/badge.svg)
+  ![Clippy](https://github.com/EstebanBorai/pxid/workflows/clippy/badge.svg)
+  ![Formatter](https://github.com/EstebanBorai/pxid/workflows/fmt/badge.svg)
+
+</div>
 
 ## Motivation
 
