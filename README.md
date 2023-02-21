@@ -66,18 +66,39 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 ## Layout
-
 A prefixed XID fits nicely on a 16 bytes slice thanks to its packed data format.
 
-```text
-V V V V W W W W X X X Y Y Z Z Z
-└─────┘ └─────┘ └───┘ └─┘ └───┘
-   |       |      |    |    |
-Prefix  Timestamp |   PID   |
-                  |       Counter
-                  |
-              Machine ID
-```
+<div align="center">
+  <table border="1">
+    <tr>
+      <td>0</td>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4</td>
+      <td>5</td>
+      <td>6</td>
+      <td>7</td>
+      <td>8</td>
+      <td>9</td>
+      <td>10</td>
+      <td>11</td>
+      <td>12</td>
+      <td>13</td>
+      <td>14</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <td colspan="4">Prefix</td>
+      <td colspan="4">Timestamp</td>
+      <td colspan="3">Machine ID</td>
+      <td colspan="2">Process ID</td>
+      <td colspan="3">Counter</td>
+    </tr>
+  </table>
+</div>
+
+For a total of 16 bytes.
 
 The prefix allows up to 4 UTF-8 Characters, this allows the ID to provide some
 context about its scope.

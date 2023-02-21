@@ -83,5 +83,14 @@
 //! This project is licensed under the MIT License
 //!
 //! [1]: https://github.com/rs/xid
+mod error;
+mod factory;
+mod host_id;
+mod id;
 
-pub const PXID: &str = "pxid";
+pub type Result<T> = std::result::Result<T, Error>;
+
+pub use error::{DecodeError, Error};
+pub use factory::Factory;
+pub use host_id::{host_id, machine_id, MachineIdBytes};
+pub use id::Pxid;
