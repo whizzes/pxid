@@ -243,11 +243,11 @@ impl Pxid {
 
         // Copies binary representation of UTF-8 characters as part of the
         // inner slice containing the prefix
-        bytes[0..=4].copy_from_slice(prefix.as_bytes());
+        bytes[0..=3].copy_from_slice(prefix.as_bytes());
 
         // Copies UNIX Timestamp first 4 bytes to Pxid's first 4 bytes using
         // Big Endian order
-        bytes[5..=8].copy_from_slice(&time.to_be_bytes());
+        bytes[4..=8].copy_from_slice(&time.to_be_bytes());
 
         // Copies first 3 bytes from Machine Pxid
         bytes[9..=11].copy_from_slice(&machine_id);
