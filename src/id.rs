@@ -97,7 +97,7 @@ pub type Bytes = [u8; BINARY_LENGTH];
 ///               Machine ID
 /// ```
 ///
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Pxid(pub(crate) Bytes);
 
@@ -240,14 +240,17 @@ impl Pxid {
         }
 
         let mut bytes: Bytes = [0; BINARY_LENGTH];
+        let mut prefix_bytes: [u8; 4] = [0; 4];
+
+        prefix_bytes.copy_from_slice(prefix.as_bytes());
 
         // Copies binary representation of UTF-8 characters as part of the
         // inner slice containing the prefix
-        bytes[0..=3].copy_from_slice(prefix.as_bytes());
+        bytes[0..=3].copy_from_slice(&prefix_bytes[0..=3]);
 
         // Copies UNIX Timestamp first 4 bytes to Pxid's first 4 bytes using
         // Big Endian order
-        bytes[4..=8].copy_from_slice(&time.to_be_bytes());
+        bytes[4..=7].copy_from_slice(&time.to_be_bytes());
 
         // Copies first 3 bytes from Machine Pxid
         bytes[9..=11].copy_from_slice(&machine_id);
@@ -256,7 +259,7 @@ impl Pxid {
         bytes[12..=13].copy_from_slice(&process_id.to_be_bytes());
 
         // 3 bytes of increment counter (big endian)
-        bytes[14..].copy_from_slice(&counter.to_be_bytes()[1..]);
+        bytes[14..].copy_from_slice(&counter.to_be_bytes()[0..=1]);
 
         Ok(Self(bytes))
     }
@@ -653,6 +656,29 @@ mod tests {
                 26
             ))),
         );
+    }
+
+    #[test]
+    fn creates_pxid_with_prefix() {
+        let value = Pxid::new("acct");
+
+        assert!(value.is_ok());
+    }
+
+    #[test]
+    fn creates_pxid_with_prefix_and_encodes_decodes() {
+        let value = Pxid::new("acct");
+
+        assert!(value.is_ok());
+        let id = value.unwrap();
+        let encoded = id.to_string();
+
+        assert!(encoded.starts_with("acct_"));
+
+        let decoded = Pxid::from_str(&encoded);
+        assert!(decoded.is_ok());
+
+        assert_eq!(id, decoded.unwrap());
     }
 
     #[test]
