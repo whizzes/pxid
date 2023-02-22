@@ -18,6 +18,13 @@ crc32fast = "1.3.2"
 md5 = "0.7.0"
 rand = "0.8.5"
 thiserror = "1.0.38"
+serde = { version = "1.0.152", features = ["derive"], optional = true }
+
+[dev-dependencies]
+serde_test = "1.0.152"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 sysctl = "0.5.4"
+
+[features]
+serde = ["dep:serde"]

@@ -7,6 +7,9 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use rand::RngCore;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 use crate::error::{DecodeError, Error};
 use crate::host_id::{machine_id, MachineIdBytes};
 use crate::Result;
@@ -95,6 +98,7 @@ pub type Bytes = [u8; BINARY_LENGTH];
 /// ```
 ///
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Pxid(pub(crate) Bytes);
 
 impl Pxid {
@@ -506,6 +510,9 @@ impl From<Bytes> for Pxid {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "serde")]
+    use serde_test::{assert_ser_tokens, Configure, Token};
+
     use crate::{DecodeError, Error};
 
     use super::*;
@@ -645,6 +652,37 @@ mod tests {
                 String::from("user_9m4e2mr0ui3e8a21s5n4g"),
                 26
             ))),
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn pxid_serialization() {
+        let pxid = Pxid::from_str("acct_9m4e2mr0ui3e8a215n4g").unwrap();
+
+        assert_ser_tokens(
+            &pxid.compact(),
+            &[
+                Token::NewtypeStruct { name: "Pxid" },
+                Token::Tuple { len: 16 },
+                Token::U8(97),
+                Token::U8(99),
+                Token::U8(99),
+                Token::U8(116),
+                Token::U8(77),
+                Token::U8(136),
+                Token::U8(225),
+                Token::U8(91),
+                Token::U8(96),
+                Token::U8(244),
+                Token::U8(134),
+                Token::U8(228),
+                Token::U8(40),
+                Token::U8(65),
+                Token::U8(45),
+                Token::U8(201),
+                Token::TupleEnd,
+            ],
         );
     }
 }
