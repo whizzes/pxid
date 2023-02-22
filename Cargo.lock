@@ -87,7 +87,7 @@ dependencies = [
 
 [[package]]
 name = "pxid"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "crc32fast",
  "md5",
