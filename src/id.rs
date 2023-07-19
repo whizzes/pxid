@@ -249,8 +249,6 @@ impl Pxid {
         let mut bytes: Bytes = [0; BINARY_LENGTH];
         let mut prefix_bytes: Vec<u8> = vec![0; prefix_len];
 
-        println!("{:?}", prefix.as_bytes());
-
         prefix_bytes.copy_from_slice(prefix.as_bytes());
 
         // Copies binary representation of UTF-8 characters as part of the
