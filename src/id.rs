@@ -239,14 +239,23 @@ impl Pxid {
             return Err(Error::PrefixExceedsMaxLength(prefix.to_string()));
         }
 
+        if prefix.is_empty() {
+            return Err(Error::Decode(DecodeError::MissingPrefix(
+                prefix.to_string(),
+            )));
+        }
+
+        let prefix_len = prefix.len();
         let mut bytes: Bytes = [0; BINARY_LENGTH];
-        let mut prefix_bytes: [u8; 4] = [0; 4];
+        let mut prefix_bytes: Vec<u8> = vec![0; prefix_len];
+
+        println!("{:?}", prefix.as_bytes());
 
         prefix_bytes.copy_from_slice(prefix.as_bytes());
 
         // Copies binary representation of UTF-8 characters as part of the
         // inner slice containing the prefix
-        bytes[0..=3].copy_from_slice(&prefix_bytes[0..=3]);
+        bytes[0..=prefix_len - 1].copy_from_slice(&prefix_bytes[0..=prefix_len - 1]);
 
         // Copies UNIX Timestamp first 4 bytes to Pxid's first 4 bytes using
         // Big Endian order
@@ -679,6 +688,36 @@ mod tests {
         assert!(decoded.is_ok());
 
         assert_eq!(id, decoded.unwrap());
+    }
+
+    #[test]
+    fn creates_pxid_with_smaller_prefixes() {
+        let value = Pxid::new("dog");
+
+        assert!(value.is_ok());
+        let id = value.unwrap();
+        let encoded = id.to_string();
+
+        assert!(encoded.starts_with("dog"));
+
+        let decoded = Pxid::from_str(&encoded);
+        assert!(decoded.is_ok());
+
+        assert_eq!(id, decoded.unwrap());
+    }
+
+    #[test]
+    fn complains_in_too_large_prefixes() {
+        let value = Pxid::new("account");
+
+        assert!(
+            value.is_err(),
+            "must complain because `account` has more than 4 chars"
+        );
+        assert_eq!(
+            value.err().unwrap(),
+            Error::PrefixExceedsMaxLength("account".to_string())
+        );
     }
 
     #[test]
