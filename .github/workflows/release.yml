@@ -1,9 +1,7 @@
-name: release
+name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
 
 jobs:
   publish-dry-run:
@@ -20,7 +18,7 @@ jobs:
       - name: publish crate
         run: cargo publish --dry-run
 
-  create-release:
+  release:
     name: Create Release
     needs: publish-dry-run
     runs-on: ubuntu-latest
@@ -28,19 +26,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Set Crate Version as Environment Variable
+        run: |
+          CARGO_TOML_VERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' Cargo.toml)
+          echo "CRATE_VERSION=$CARGO_TOML_VERSION" >> $GITHUB_ENV
+
       - name: Create Release with Notes
         uses: actions/github-script@v5
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             await github.request(`POST /repos/${{ github.repository }}/releases`, {
-              tag_name: "${{ github.ref }}",
+              tag_name: "$CRATE_VERSION",
               generate_release_notes: true
             });
 
   publish-crate:
     name: Publish to crates.io
-    needs: create-release
+    needs: release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
