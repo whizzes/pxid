@@ -65,18 +65,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add .
           git commit -m "chore: bump version to v$CRATE_VERSION"
-          git tag -a -m "chore: bump version to v$CRATE_VERSION" "v$CRATE_VERSION"
-          git push origin main --follow-tags
-
-      - name: Create Release with Notes
-        uses: actions/github-script@v5
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            await github.request(`POST /repos/${{ github.repository }}/releases`, {
-              tag_name: "v$CRATE_VERSION",
-              generate_release_notes: true
-            });
+          git push origin main
 
   publish-crate:
     name: Publish to crates.io
