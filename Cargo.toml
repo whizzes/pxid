@@ -1,6 +1,6 @@
 [package]
 name = "pxid"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 description = "Prefixed Globally Unique Identifier"
 repository = "https://github.com/EstebanBorai/pxid"

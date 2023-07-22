@@ -67,20 +67,10 @@ jobs:
           git commit -m "chore: bump version to v$CRATE_VERSION"
           git push origin main
 
-  publish-crate:
-    name: Publish to crates.io
-    needs: release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-      - run: cargo login ${CRATES_IO_TOKEN}
+      - name: Login to Crates.io
+        run: cargo login ${CRATES_IO_TOKEN}
         env:
           CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
 
-      - name: publish crate
+      - name: Publish crate
         run: cargo publish
