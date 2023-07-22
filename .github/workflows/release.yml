@@ -2,6 +2,20 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        type: choice
+        required: true
+        description: 'Version number to bump'
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
   publish-dry-run:
@@ -33,10 +47,26 @@ jobs:
           toolchain: stable
           override: true
 
+      - name: Install `cargo-edit`
+        run: cargo install cargo-edit
+      
+      - id: cargo-set-version
+        name: Set Version
+        run: cargo set-version --bump ${{ inputs.version }}
+
       - name: Set Crate Version as Environment Variable
         run: |
           CARGO_TOML_VERSION=$(awk -F ' = ' '$1 ~ /version/ { gsub(/[\"]/, "", $2); printf("%s",$2) }' Cargo.toml)
           echo "CRATE_VERSION=$CARGO_TOML_VERSION" >> $GITHUB_ENV
+
+      - name: Create Commit
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "chore: bump version to v$CRATE_VERSION"
+          git tag -a -m "chore: bump version to v$CRATE_VERSION" "v$CRATE_VERSION"
+          git push origin main --follow-tags
 
       - name: Create Release with Notes
         uses: actions/github-script@v5
@@ -44,7 +74,7 @@ jobs:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             await github.request(`POST /repos/${{ github.repository }}/releases`, {
-              tag_name: "$CRATE_VERSION",
+              tag_name: "v$CRATE_VERSION",
               generate_release_notes: true
             });
 
