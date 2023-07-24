@@ -74,3 +74,13 @@ jobs:
 
       - name: Publish crate
         run: cargo publish
+
+      - name: Create Release
+        id: create_release
+        uses: actions/github-script@v5
+        with:
+          script: |
+            await github.request(`POST /repos/${{ github.repository }}/releases`, {
+              tag_name: "v${{ env.CRATE_VERSION }}",
+              generate_release_notes: true
+            });
