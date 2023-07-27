@@ -6,7 +6,7 @@ use async_graphql::{InputValueError, InputValueResult, Scalar, ScalarType, Value
 use serde::{Deserialize, Serialize};
 
 /// `Pxid` is an unique 16 bytes prefixed identifier
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Pxid(crate::Pxid);
 
 impl Pxid {
