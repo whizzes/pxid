@@ -1,10 +1,12 @@
-use std::{ops::Deref, str::FromStr};
+use std::ops::Deref;
+use std::str::FromStr;
 
+use async_graphql::connection::CursorType;
 use async_graphql::{InputValueError, InputValueResult, Scalar, ScalarType, Value};
 use serde::{Deserialize, Serialize};
 
 /// `Pxid` is an unique 16 bytes prefixed identifier
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Pxid(crate::Pxid);
 
 impl Pxid {
@@ -50,6 +52,26 @@ impl ScalarType for Pxid {
 impl ToString for Pxid {
     fn to_string(&self) -> String {
         self.0.to_string()
+    }
+}
+
+impl FromStr for Pxid {
+    type Err = crate::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        crate::Pxid::from_str(s).map(Self)
+    }
+}
+
+impl CursorType for Pxid {
+    type Error = crate::error::Error;
+
+    fn decode_cursor(s: &str) -> Result<Self, Self::Error> {
+        Pxid::from_str(s)
+    }
+
+    fn encode_cursor(&self) -> String {
+        self.to_string()
     }
 }
 
