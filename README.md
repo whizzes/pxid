@@ -65,6 +65,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
+### GraphQL Support
+
+You can use `Pxid` on GraphQL via the `async-graphql` crate.
+Make sure the `graphql` feature is enabled and import `Pxid` for GraphQL.
+
+```rust
+use async_graphql::{Context, InputObject, Result, SimpleObject};
+use pxid::graphql::Pxid;
+
+// -- snip --
+
+#[derive(Debug, InputObject)]
+pub struct PostCreateInput {
+    pub title: String,
+    pub content: String,
+    pub parent_id: Option<Pxid>,
+}
+
+impl PostCreate {
+    pub async fn exec(ctx: &Context<'_>, input: PostCreateInput) -> Result<Self> {
+// -- snip --
+```
+
+> Check out the full example [here][2].
+
 ## Layout
 A prefixed XID fits nicely on a 16 bytes slice thanks to its packed data format.
 
@@ -117,3 +142,4 @@ of context on record association.
 This project is licensed under the MIT License
 
 [1]: https://github.com/rs/xid
+[2]: https://github.com/whizzes/gabble/blob/ca10e295ce1386dd15a8f91f968e7aa8085287c4/crates/server/src/graphql/modules/post/mutation/post_create.rs
