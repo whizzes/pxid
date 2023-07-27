@@ -651,7 +651,7 @@ dependencies = [
 
 [[package]]
 name = "pxid"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "async-graphql",
  "crc32fast",
