@@ -7,6 +7,12 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use rand::RngCore;
 
+#[cfg(feature = "async-graphql")]
+use async_graphql::connection::CursorType;
+
+#[cfg(feature = "async-graphql")]
+use async_graphql::{InputValueError, InputValueResult, Scalar, ScalarType, Value};
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -515,6 +521,67 @@ impl FromStr for Pxid {
 impl From<Bytes> for Pxid {
     fn from(value: Bytes) -> Self {
         Pxid(value)
+    }
+}
+
+#[cfg(feature = "async-graphql")]
+#[Scalar]
+impl ScalarType for Pxid {
+    fn parse(data: Value) -> InputValueResult<Self> {
+        match data.clone() {
+            Value::String(inner) => {
+                if let Ok(pxid) = crate::Pxid::from_str(&inner) {
+                    return Ok(pxid);
+                }
+
+                Err(InputValueError::expected_type(data))
+            }
+            _ => Err(InputValueError::expected_type(data)),
+        }
+    }
+
+    fn to_value(&self) -> Value {
+        Value::String(self.to_string())
+    }
+}
+
+#[cfg(feature = "async-graphql")]
+impl CursorType for Pxid {
+    type Error = crate::error::Error;
+
+    fn decode_cursor(s: &str) -> std::result::Result<Self, Self::Error> {
+        Pxid::from_str(s)
+    }
+
+    fn encode_cursor(&self) -> String {
+        self.to_string()
+    }
+}
+
+#[cfg(feature = "async-graphql")]
+#[cfg(test)]
+mod asyng_graphql_tests {
+    use async_graphql::ScalarType;
+
+    use super::{Pxid, Value};
+
+    #[test]
+    fn validates_string_is_actual_pxid_instance() {
+        let pxid_str = String::from("acct_9m4e2mr0ui3e8a215n4g");
+        let stri_value = Value::String(pxid_str);
+        let pxid_scalar = Pxid::parse(stri_value).unwrap();
+        let value = pxid_scalar.to_string();
+
+        assert_eq!(value, "acct_9m4e2mr0ui3e8a215n4g");
+    }
+
+    #[test]
+    fn invalidates_string_pxid_instance() {
+        let pxid_str = String::from("9m4e2mr0ui3e8a");
+        let stri_value = Value::String(pxid_str);
+        let pxid_str_scalar = Pxid::parse(stri_value);
+
+        assert!(pxid_str_scalar.is_err());
     }
 }
 
