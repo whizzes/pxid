@@ -85,10 +85,6 @@
 //! [1]: https://github.com/rs/xid
 mod error;
 mod factory;
-
-#[cfg(feature = "async-graphql")]
-pub mod graphql;
-
 mod host_id;
 mod id;
 
