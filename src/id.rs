@@ -1,4 +1,4 @@
-use std::fmt::{self, Display};
+use std::fmt::{self, Debug, Display};
 use std::ops::Deref;
 use std::process;
 use std::str::{from_utf8, FromStr};
@@ -103,7 +103,7 @@ pub type Bytes = [u8; BINARY_LENGTH];
 ///               Machine ID
 /// ```
 ///
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Pxid(pub(crate) Bytes);
 
@@ -402,6 +402,14 @@ impl Deref for Pxid {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl Debug for Pxid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let value = self.to_string();
+
+        f.debug_tuple("Pxid").field(&value).finish()
     }
 }
 
@@ -783,6 +791,25 @@ mod tests {
             value.err().unwrap(),
             Error::PrefixExceedsMaxLength("account".to_string())
         );
+    }
+
+    #[test]
+    fn display_value_as_string() {
+        let value = Pxid::new("user");
+        let string = value.clone().unwrap().to_string();
+        let display = format!("{}", value.unwrap());
+
+        assert!(string.starts_with("user_"));
+        assert_eq!(string, display);
+    }
+
+    #[test]
+    fn debug_value_as_string() {
+        let value = Pxid::new("user");
+        let string = value.clone().unwrap().to_string();
+        let debug = format!("{:?}", value.unwrap());
+
+        assert_eq!(debug, format!("Pxid(\"{}\")", string));
     }
 
     #[test]
