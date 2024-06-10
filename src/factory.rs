@@ -64,3 +64,26 @@ impl Factory {
         Pxid::from_parts(prefix, time, self.machine_id, self.process_id, counter)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn factory_never_repeats() {
+        const TRYOUTS: usize = 1000;
+
+        let mut specimen: Vec<Pxid> = Vec::with_capacity(TRYOUTS);
+        let factory = Factory::new().unwrap();
+
+        for _ in 0..TRYOUTS {
+            let id = factory.new_id("test").unwrap();
+            specimen.push(id);
+        }
+
+        for id in specimen.iter() {
+            let count = specimen.iter().filter(|&x| x == id).count();
+            assert_eq!(count, 1);
+        }
+    }
+}

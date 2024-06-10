@@ -272,7 +272,7 @@ impl Pxid {
         bytes[12..=13].copy_from_slice(&process_id.to_be_bytes());
 
         // 3 bytes of increment counter (big endian)
-        bytes[14..].copy_from_slice(&counter.to_be_bytes()[0..=1]);
+        bytes[14..].copy_from_slice(&counter.to_be_bytes()[2..4]);
 
         Ok(Self(bytes))
     }
