@@ -14,7 +14,10 @@ use async_graphql::connection::CursorType;
 use async_graphql::{InputValueError, InputValueResult, Scalar, ScalarType, Value};
 
 #[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+#[cfg(feature = "serde")]
+use serde::de::Visitor;
 
 use crate::error::{DecodeError, Error};
 use crate::host_id::{machine_id, MachineIdBytes};
@@ -104,7 +107,6 @@ pub type Bytes = [u8; BINARY_LENGTH];
 /// ```
 ///
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct Pxid(pub(crate) Bytes);
 
 impl Pxid {
@@ -566,6 +568,45 @@ impl CursorType for Pxid {
     }
 }
 
+#[cfg(feature = "serde")]
+struct PxidVisitor;
+
+#[cfg(feature = "serde")]
+impl<'de> Visitor<'de> for PxidVisitor {
+    type Value = Pxid;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a valid Pxid string")
+    }
+
+    fn visit_str<E>(self, value: &str) -> std::result::Result<Pxid, E>
+    where
+        E: serde::de::Error,
+    {
+        Pxid::from_str(value).map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for Pxid {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for Pxid {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Pxid, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_str(PxidVisitor)
+    }
+}
+
 #[cfg(feature = "async-graphql")]
 #[cfg(test)]
 mod asyng_graphql_tests {
@@ -817,29 +858,27 @@ mod tests {
     fn pxid_serialization() {
         let pxid = Pxid::from_str("acct_9m4e2mr0ui3e8a215n4g").unwrap();
 
-        assert_ser_tokens(
-            &pxid.compact(),
-            &[
-                Token::NewtypeStruct { name: "Pxid" },
-                Token::Tuple { len: 16 },
-                Token::U8(97),
-                Token::U8(99),
-                Token::U8(99),
-                Token::U8(116),
-                Token::U8(77),
-                Token::U8(136),
-                Token::U8(225),
-                Token::U8(91),
-                Token::U8(96),
-                Token::U8(244),
-                Token::U8(134),
-                Token::U8(228),
-                Token::U8(40),
-                Token::U8(65),
-                Token::U8(45),
-                Token::U8(201),
-                Token::TupleEnd,
-            ],
+        assert_ser_tokens(&pxid.compact(), &[Token::Str("acct_9m4e2mr0ui3e8a215n4g")]);
+    }
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn pxid_deserialization() {
+        #[derive(Debug, Deserialize)]
+        struct User {
+            id: Pxid,
+        }
+
+        let user: User = serde_json::from_str(
+            r#"{
+            "id": "user_crdqga007gvfk4a3t0t0"
+        }"#,
+        )
+        .expect("Failed to create sample JSON for User");
+
+        assert_eq!(
+            user.id,
+            Pxid::from_str("user_crdqga007gvfk4a3t0t0").unwrap()
         );
     }
 }
