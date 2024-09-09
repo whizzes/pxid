@@ -639,6 +639,7 @@ dependencies = [
  "md5",
  "rand",
  "serde",
+ "serde_json",
  "serde_test",
  "sysctl",
  "thiserror",
